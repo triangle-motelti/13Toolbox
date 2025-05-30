@@ -1,15 +1,33 @@
 #!/bin/bash
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    script.sh                                          :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: yrhandou <yrhandou@student.1337.ma>        +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2025/04/21 17:58:37 by yrhandou          #+#    #+#              #
-#    Updated: 2025/05/12 15:06:31 by yrhandou         ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
+# ************************************************ #
+#												   #
+#			              %%%					   #
+#			            %%+ %					   #
+#			             : %@					   #
+#			         %%@@@*@					   #
+#			      %%%%:  .-@@@					   #
+#			     %% @+%%:   +%					   #
+#			   @     @ @#+: =@@					   #
+#			   @    @+   =+-% %%%				   #
+#			    @-   @@@+.+@@@@					   #
+#			  #@@@+     .@@  ++ =@				   #
+#			     #@   @+     #%%+ @				   #
+#			       @+@+@@@@@@@   @#+@*			   #
+#			     @@  @@++++=+=+@@   @*			   #
+#			       @@* +@@%@== #@@+@			   #
+#			        @@+@     @+  +@				   #
+#			    :@@@-  @      %@+@*@			   #
+#			  @@%%%%%@@@@@@=        @  :		   #
+#			                @@@@@@@@@@@			   #
+#                                                  #
+#                                                  #
+#    By: yrhandou <yrhandou@student.1337.ma>       #
+#                                                  #
+#    Created: 2025/04/21 17:58:37 by yrhandou      #
+#    Updated: 2025/05/12 15:06:31 by yrhandou      #
+#                                                  #
+# *************************************************#
+
 
 
 bluetooth_mangler()
@@ -28,7 +46,6 @@ bluetooth_mangler()
 		device=$(echo "${devices_array[i]}" | awk ' {print $2}')
 		paired_devices+=("$device");
 		bluetoothctl remove "${paired_devices[i]}";
-		printf "%s Removed !" "${devices_array[i]}";
 		((i++));
 	done
 	printf "\nDone :)\n"
@@ -46,8 +63,8 @@ display()
 
 theme_switcher()
 {
-	night_time="19:15"
-	day_time="07:30"
+	night_time="20:15"
+	day_time="07:00"
 	current_time=$(date +"%H:%M")
 
 	if [[ "$current_time" > "$night_time" || "$current_time" < "$day_time" ]]; then
@@ -59,20 +76,25 @@ theme_switcher()
 }
 lightmode()
 {
+	LIGHT_THEME="Adwaita";
 	echo "Setting Light Theme..."
-	gsettings set org.gnome.desktop.interface gtk-theme Adwaita
+	gsettings set org.gnome.desktop.interface gtk-theme $LIGHT_THEME
 	gsettings set org.gnome.desktop.interface color-scheme prefer-light
 }
 darkmode()
 {
+	DARK_THEME="Adwaita";
 	echo "Setting Dark Theme..."
-	gsettings set org.gnome.desktop.interface gtk-theme Adwaita-dark
+	gsettings set org.gnome.desktop.interface gtk-theme $DARK_THEME
 	gsettings set org.gnome.desktop.interface color-scheme prefer-dark
 }
 
 update_favourites()
 {
-	flatpak update com.visualstudio.code org.mozilla.firefox -y ;
+	declare -a APPLICATIONS;
+
+	APPLICATIONS=(com.visualstudio.code org.mozilla.firefox)  # Applications That will be Updated
+	flatpak update "${APPLICATIONS[@]}"  -y ;
 }
 
 default_settings()
