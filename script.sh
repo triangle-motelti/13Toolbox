@@ -41,6 +41,10 @@ bluetooth_mangler()
 	devices=$( bluetoothctl paired-devices )
 	paired_devices_count=$(echo "$devices" | grep -c "Device" )
 	IFS=$'\n' read -r -d '' -a devices_array <<< "$devices"
+	if [[ $paired_devices_count -eq 0 ]]; then
+		echo -e "\e[33mNO bluethooth device Paired , Exiting!\e[0m"
+		return;
+	fi;
 	while [[ i -lt  $paired_devices_count ]] ;
 	do
 		device=$(echo "${devices_array[i]}" | awk ' {print $2}')
