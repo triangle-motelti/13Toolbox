@@ -21,14 +21,10 @@
 #			                @@@@@@@@@@@			   #
 #                                                  #
 #                                                  #
-#    By: yrhandou <yrhandou@student.1337.ma>       #
 #                                                  #
 #    Created: 2025/04/21 17:58:37 by yrhandou      #
-#    Updated: 2025/05/12 15:06:31 by yrhandou      #
 #                                                  #
 # *************************************************#
-
-
 
 bluetooth_mangler()
 {
@@ -59,8 +55,9 @@ bluetooth_mangler()
 display()
 {
 	RESOLUTION=2560x1440
+	ICON="Win10Sur"
 	xrandr -s $RESOLUTION;
-	gsettings set org.gnome.desktop.interface icon-theme Win10Sur;
+	gsettings set org.gnome.desktop.interface icon-theme "$ICON";
 	echo "Changed Resolution Successfully ✅";
 
 }
@@ -70,7 +67,6 @@ theme_switcher()
 	night_time="20:15"
 	day_time="07:00"
 	current_time=$(date +"%H:%M")
-
 	if [[ "$current_time" > "$night_time" || "$current_time" < "$day_time" ]]; then
 		darkmode
 	elif [[ "$current_time" > "$day_time"  && "$current_time" < "$night_time" ]]; then
@@ -93,11 +89,36 @@ darkmode()
 	gsettings set org.gnome.desktop.interface color-scheme prefer-dark
 }
 
+spotify_fix()
+{
+	rm -rf "$HOME/.var/app/com.spotify.Client"
+	flatpak override --user --nosocket=wayland com.spotify.Client
+	flatpack run com.spotify.Client
+}
+
+create_alias()
+{
+	declare -a FILES
+	declare  SH_ENV
+
+	FILES=($(ls -d .*shrc 2>/dev/null))
+	count=${#FILES[@]}
+	if [[ $count -eq 1 ]] ; then
+		SH_ENV=${FILES[0]}
+		echo "alias code=\"flatpack run com.visualstudio.code\""
+		return 1
+	elif [[ $count -eq 0 ]]; then
+		echo "NO shell config found :("
+		return 0
+	fi
+
+}
+
 update_favourites()
 {
 	declare -a APPLICATIONS;
 
-	APPLICATIONS=(com.visualstudio.code org.mozilla.firefox)  # Applications That will be Updated
+	APPLICATIONS=(com.visualstudio.code org.mozilla.firefox com.spotify.Client)  # Applications That will be Updated
 	flatpak update "${APPLICATIONS[@]}"  -y ;
 }
 
@@ -105,9 +126,9 @@ default_settings()
 {
 	bluetooth_mangler
 	display
-	theme_switcher
 	update_favourites
 }
+
 main()
 {
 	if [[ $1 = '-bth' ]]; then
@@ -118,11 +139,17 @@ main()
 		update_favourites
 	elif [[ $1 = '-d' ]]; then
 		display
+	elif [[ $1 = '-s' ]]; then
+		spotify_fix
+	elif [[ $1 = '-p' ]]; then
+		create_alias
+	else
+		return 1
 	fi
-	if [[ "$1" -eq 0 ]]; then
-		echo -e "\e[33mNo Args Given ! Using default settings\e[0m"
-		default_settings
-	fi
+	# if [[ "$1" -eq 0 ]]; then
+	# 	echo -e "\e[33mNo Args Given ! Using default settings\e[0m"
+	# 	default_settings
+
 }
 
 main "$1"
