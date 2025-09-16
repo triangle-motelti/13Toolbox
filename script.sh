@@ -93,7 +93,7 @@ spotify_fix()
 {
 	rm -rf "$HOME/.var/app/com.spotify.Client"
 	flatpak override --user --nosocket=wayland com.spotify.Client
-	flatpack run com.spotify.Client
+	flatpak run com.spotify.Client
 }
 
 create_alias()
@@ -111,14 +111,13 @@ create_alias()
 		echo "NO shell config found :("
 		return 0
 	fi
-
 }
 
 update_favourites()
 {
 	declare -a APPLICATIONS;
 
-	APPLICATIONS=(com.visualstudio.code org.mozilla.firefox com.spotify.Client)  # Applications That will be Updated
+	APPLICATIONS=( org.mozilla.firefox com.spotify.Client)  # Applications That will be Updated
 	flatpak update "${APPLICATIONS[@]}"  -y ;
 }
 
@@ -143,13 +142,12 @@ main()
 		spotify_fix
 	elif [[ $1 = '-p' ]]; then
 		create_alias
+	elif [[ "$1" -eq 0 ]]; then
+		echo -e "\e[33mNo Args Given ! Using default settings\e[0m"
+		default_settings
 	else
 		return 1
 	fi
-	# if [[ "$1" -eq 0 ]]; then
-	# 	echo -e "\e[33mNo Args Given ! Using default settings\e[0m"
-	# 	default_settings
-
 }
 
 main "$1"
