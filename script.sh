@@ -26,6 +26,16 @@
 #                                                  #
 # *************************************************#
 
+
+Black='\033[0;30m'
+Red='\033[0;31m'
+Green='\033[0;32m'
+Yellow='\033[0;33m'
+Blue='\033[0;34m'
+Purple='\033[0;35m'
+Cyan='\033[0;36m'
+White='\033[0;37m'
+
 bluetooth_mangler()
 {
 	declare -i i=0;
@@ -38,7 +48,7 @@ bluetooth_mangler()
 	paired_devices_count=$(echo "$devices" | grep -c "Device" )
 	IFS=$'\n' read -r -d '' -a devices_array <<< "$devices"
 	if [[ $paired_devices_count -eq 0 ]]; then
-		echo -e "\e[33mNO bluethooth device Paired , Exiting!\e[0m"
+		echo -e "$Yellow NO bluethooth device Paired , Exiting! $Black"
 		return;
 	fi;
 	while [[ i -lt  $paired_devices_count ]] ;
@@ -54,12 +64,22 @@ bluetooth_mangler()
 
 display()
 {
-	RESOLUTION=2560x1440
+	if [[ $1 -eq 0 ]]; then
+		RESOLUTION=2560x1440
+	else
+		RESOLUTION=$1
+	fi
 	ICON="Win10Sur"
-	xrandr -s $RESOLUTION;
+	xrandr -s "$RESOLUTION";
 	gsettings set org.gnome.desktop.interface icon-theme "$ICON";
-	echo "Changed Resolution Successfully ✅";
+	echo -e "$Green Changed Resolution Successfully $Black";
 
+}
+
+brightness()
+{
+	gdbus call --session --dest org.gnome.SettingsDaemon.Power --object-path /org/gnome/SettingsDaemon/Power \
+	--method org.freedesktop.DBus.Properties.Set org.gnome.SettingsDaemon.Power.Screen Brightness "<int32 $1>"
 }
 
 theme_switcher()
@@ -72,7 +92,6 @@ theme_switcher()
 	elif [[ "$current_time" > "$day_time"  && "$current_time" < "$night_time" ]]; then
 		lightmode
 	fi
-	echo "Done ✅"
 }
 lightmode()
 {
@@ -94,30 +113,15 @@ spotify_fix()
 	rm -rf "$HOME/.var/app/com.spotify.Client"
 	flatpak override --user --nosocket=wayland com.spotify.Client
 	flatpak run com.spotify.Client
-}
-
-create_alias()
-{
-	declare -a FILES
-	declare  SH_ENV
-
-	FILES=($(ls -d .*shrc 2>/dev/null))
-	count=${#FILES[@]}
-	if [[ $count -eq 1 ]] ; then
-		SH_ENV=${FILES[0]}
-		echo "alias code=\"flatpack run com.visualstudio.code\""
-		return 1
-	elif [[ $count -eq 0 ]]; then
-		echo "NO shell config found :("
-		return 0
-	fi
+	echo "eyyyy"
 }
 
 update_favourites()
 {
 	declare -a APPLICATIONS;
 
-	APPLICATIONS=( org.mozilla.firefox com.spotify.Client)  # Applications That will be Updated
+	echo -e "$Blue No Args Given ! Using default settings $Black"
+	APPLICATIONS=( org.mozilla.firefox com.spotify.Client com.visualstudio.code)  # Applications That will be Updated
 	flatpak update "${APPLICATIONS[@]}"  -y ;
 }
 
@@ -127,7 +131,6 @@ default_settings()
 	display
 	update_favourites
 }
-
 main()
 {
 	if [[ $1 = '-bth' ]]; then
@@ -137,17 +140,16 @@ main()
 	elif [[ $1 = '-u' ]]; then
 		update_favourites
 	elif [[ $1 = '-d' ]]; then
-		display
+		display $2
+	elif [[ $1 = '-b' ]]; then
+		brightness "$2"
 	elif [[ $1 = '-s' ]]; then
 		spotify_fix
-	elif [[ $1 = '-p' ]]; then
-		create_alias
 	elif [[ "$1" -eq 0 ]]; then
-		echo -e "\e[33mNo Args Given ! Using default settings\e[0m"
 		default_settings
 	else
 		return 1
 	fi
 }
 
-main "$1"
+main "$1" "$2"

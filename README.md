@@ -1,4 +1,4 @@
-# v0.1
+# v0.2
 
 This is shell script that automates some repetitive setup for ubuntu computers.
 
@@ -8,10 +8,15 @@ Run the script with no arguments to run default the settings
 
 ### -bth: will remove all paired bluetooth devices.
 
-### -d will set the display to 2
+### -d <value> will set the display resolution, if no value is provided the default is 2560x1440.
 
 ### -t will set the theme to light and dark depending on time of day
 
-### -u will update the apps specified in ```update_favourites```
+### -u will update the apps specified in ```update_favourites``` if the apps aren't installed then the update will fail (the fix is in progress).
+
+### -s Will fix spotify not starting.
+
+### -b <value> will set the brightness level
+
 
 
