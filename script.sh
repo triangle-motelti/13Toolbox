@@ -21,14 +21,20 @@
 #			                @@@@@@@@@@@			   #
 #                                                  #
 #                                                  #
-#    By: yrhandou <yrhandou@student.1337.ma>       #
 #                                                  #
 #    Created: 2025/04/21 17:58:37 by yrhandou      #
-#    Updated: 2025/05/12 15:06:31 by yrhandou      #
 #                                                  #
 # *************************************************#
 
 
+Black='\033[0;30m'
+Red='\033[0;31m'
+Green='\033[0;32m'
+Yellow='\033[0;33m'
+Blue='\033[0;34m'
+Purple='\033[0;35m'
+Cyan='\033[0;36m'
+White='\033[0;37m'
 
 bluetooth_mangler()
 {
@@ -42,7 +48,7 @@ bluetooth_mangler()
 	paired_devices_count=$(echo "$devices" | grep -c "Device" )
 	IFS=$'\n' read -r -d '' -a devices_array <<< "$devices"
 	if [[ $paired_devices_count -eq 0 ]]; then
-		echo -e "\e[33mNO bluethooth device Paired , Exiting!\e[0m"
+		echo -e "$Yellow NO bluethooth device Paired , Exiting! $Black"
 		return;
 	fi;
 	while [[ i -lt  $paired_devices_count ]] ;
@@ -58,11 +64,22 @@ bluetooth_mangler()
 
 display()
 {
-	RESOLUTION=2560x1440
-	xrandr -s $RESOLUTION;
-	gsettings set org.gnome.desktop.interface icon-theme Win10Sur;
-	echo "Changed Resolution Successfully ✅";
+	if [[ $1 -eq 0 ]]; then
+		RESOLUTION=2560x1440
+	else
+		RESOLUTION=$1
+	fi
+	ICON="Win10Sur"
+	xrandr -s "$RESOLUTION";
+	gsettings set org.gnome.desktop.interface icon-theme "$ICON";
+	echo -e "$Green Changed Resolution Successfully $Black";
 
+}
+
+brightness()
+{
+	gdbus call --session --dest org.gnome.SettingsDaemon.Power --object-path /org/gnome/SettingsDaemon/Power \
+	--method org.freedesktop.DBus.Properties.Set org.gnome.SettingsDaemon.Power.Screen Brightness "<int32 $1>"
 }
 
 theme_switcher()
@@ -70,13 +87,11 @@ theme_switcher()
 	night_time="20:15"
 	day_time="07:00"
 	current_time=$(date +"%H:%M")
-
 	if [[ "$current_time" > "$night_time" || "$current_time" < "$day_time" ]]; then
 		darkmode
 	elif [[ "$current_time" > "$day_time"  && "$current_time" < "$night_time" ]]; then
 		lightmode
 	fi
-	echo "Done ✅"
 }
 lightmode()
 {
@@ -93,11 +108,20 @@ darkmode()
 	gsettings set org.gnome.desktop.interface color-scheme prefer-dark
 }
 
+spotify_fix()
+{
+	rm -rf "$HOME/.var/app/com.spotify.Client"
+	flatpak override --user --nosocket=wayland com.spotify.Client
+	flatpak run com.spotify.Client
+	echo "eyyyy"
+}
+
 update_favourites()
 {
 	declare -a APPLICATIONS;
 
-	APPLICATIONS=(com.visualstudio.code org.mozilla.firefox)  # Applications That will be Updated
+	echo -e "$Blue No Args Given ! Using default settings $Black"
+	APPLICATIONS=( org.mozilla.firefox com.spotify.Client com.visualstudio.code)  # Applications That will be Updated
 	flatpak update "${APPLICATIONS[@]}"  -y ;
 }
 
@@ -105,7 +129,6 @@ default_settings()
 {
 	bluetooth_mangler
 	display
-	theme_switcher
 	update_favourites
 }
 main()
@@ -117,12 +140,16 @@ main()
 	elif [[ $1 = '-u' ]]; then
 		update_favourites
 	elif [[ $1 = '-d' ]]; then
-		display
-	fi
-	if [[ "$1" -eq 0 ]]; then
-		echo -e "\e[33mNo Args Given ! Using default settings\e[0m"
+		display $2
+	elif [[ $1 = '-b' ]]; then
+		brightness "$2"
+	elif [[ $1 = '-s' ]]; then
+		spotify_fix
+	elif [[ "$1" -eq 0 ]]; then
 		default_settings
+	else
+		return 1
 	fi
 }
 
-main "$1"
+main "$1" "$2"
